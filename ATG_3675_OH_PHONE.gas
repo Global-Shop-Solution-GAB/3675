@@ -1,0 +1,120 @@
+Program.Sub.ScreenSU.Start
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Hook 11751
+'When the user enters a phone number on the order header address is pulled from invoice hist if intercompany is checked in customer master.
+V.Local.sSQL.Declare(String)
+F.ODBC.Connection!CONX.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+F.Intrinsic.String.Concat("Select * from V_CUSTOMER_MASTER WHERE CUSTOMER='",V.Passed.000006.Trim,"' AND INTERCOMPANY='Y'",V.Local.sSQL)
+F.ODBC.Connection!CONX.OpenRecordsetRO("rstCust",V.Local.sSQL)
+'F.Intrinsic.Debug.InvokeDebugger
+F.Intrinsic.Debug.Stop
+F.Intrinsic.Control.If(V.ODBC.CONX!rstCust.EOF,=,False)
+	F.Intrinsic.String.Concat("SELECT B.ORDER_NO, H.ORDER_SHIP_ID, B.CONTACT_EMAIL FROM V_ORDER_HEADER H, V_ORDER_BILL_TO B WHERE B.ORDER_NO=H.ORDER_NO AND B.CONTACT_PHONE='",V.Passed.000051.Trim,"' ORDER BY H.DATE_ORDER DESC",V.Local.sSQL)
+	F.ODBC.Connection!CONX.OpenRecordsetRO("rstORDER",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.ODBC.CONX!rstORDER.EOF,=,False)
+		F.Intrinsic.String.Concat("SELECT * FROM V_ORDER_SHIP_TO WHERE ORDER_NO='",V.ODBC.CONX!rstORDER.FieldValTrim!ORDER_NO,"' AND ORDER_SHIP_ID='",V.ODBC.CONX!rstORDER.FieldValTrim!ORDER_SHIP_ID,"'",V.Local.sSQL)
+		F.ODBC.Connection!CONX.OpenRecordsetRO("rstCustomer",V.Local.sSQL)
+		F.Intrinsic.Control.If(V.ODBC.CONX!rstCustomer.EOF,=,False)
+			'Bill
+			V.Passed.000007.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!NAME_CUSTOMER_SHIP)
+			'Ship
+			V.Passed.000008.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!NAME_CUSTOMER_SHIP)
+			'Bill
+			V.Passed.000009.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_1_SHIP)
+			'Ship
+			V.Passed.000010.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_1_SHIP)
+			'Bill
+			V.Passed.000011.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_2_SHIP)
+			'Ship
+			V.Passed.000012.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_2_SHIP)
+			'Bill
+			V.Passed.000052.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_3_SHIP)
+			V.Passed.000053.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_4_SHIP)
+			V.Passed.000055.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_5_SHIP)
+			'Ship
+			V.Passed.000057.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_3_SHIP)
+			V.Passed.000058.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_4_SHIP)
+			V.Passed.000059.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ADDRESS_5_SHIP)
+
+			'Bill
+			V.Passed.000021.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ATTENTION_SHIP)
+			V.Passed.000013.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!CITY_SHIP)
+			V.Passed.000014.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!STATE_SHIP)
+			V.Passed.000015.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!CODE_ZIP_SHIP)
+
+			'Ship
+			V.Passed.000022.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!ATTENTION_SHIP)
+			V.Passed.000016.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!CITY_SHIP)
+			V.Passed.000017.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!STATE_SHIP)
+			V.Passed.000018.Set(V.ODBC.CONX!rstCustomer.FieldValTrim!CODE_ZIP_SHIP)
+			'Misc
+			V.Passed.000071.Set(V.ODBC.CONX!rstORDER.FieldValTrim!CONTACT_EMAIL)
+			
+			F.ODBC.CONX!rstCustomer.Close
+			F.ODBC.CONX!rstORDER.Close
+			F.ODBC.Connection!CONX.Close
+			F.Intrinsic.Control.End
+		F.Intrinsic.Control.EndIf
+		F.ODBC.CONX!rstCustomer.Close
+	F.Intrinsic.Control.EndIf
+	F.ODBC.CONX!rstORDER.Close
+
+	F.Intrinsic.String.Concat("SELECT * FROM ORDER_HIST_HEAD WHERE CONTACT_PHONE='",V.Passed.000051.Trim,"' ORDER BY DATE_ORDER DESC",V.Local.sSQL)
+	F.ODBC.Connection!CONX.OpenRecordsetRO("rstORDER",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.ODBC.CONX!rstORDER.EOF,=,False)
+		'Bill
+		V.Passed.000007.Set(V.ODBC.CONX!rstORDER.FieldValTrim!NAME_CUSTOMER_SHIP)
+		'Ship
+		V.Passed.000008.Set(V.ODBC.CONX!rstORDER.FieldValTrim!NAME_CUSTOMER_SHIP)
+		'Bill
+		V.Passed.000009.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS1_SHIP)
+		'Ship
+		V.Passed.000010.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS1_SHIP)
+		'Bill
+		V.Passed.000011.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS2_SHIP)
+		'Ship
+		V.Passed.000012.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS2_SHIP)
+		'Bill
+		V.Passed.000052.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS3_SHIP)
+		V.Passed.000053.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS4_SHIP)
+		V.Passed.000055.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS5_SHIP)
+		'Ship
+		V.Passed.000057.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS3_SHIP)
+		V.Passed.000058.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS4_SHIP)
+		V.Passed.000059.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ADDRESS5_SHIP)
+
+		'Bill
+		V.Passed.000021.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ATTENTION)
+		V.Passed.000013.Set(V.ODBC.CONX!rstORDER.FieldValTrim!CITY_SHIP)
+		V.Passed.000014.Set(V.ODBC.CONX!rstORDER.FieldValTrim!STATE_SHIP)
+		V.Passed.000015.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ZIP_SHIP)
+
+		'Ship
+		V.Passed.000022.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ATTENTION)
+		V.Passed.000016.Set(V.ODBC.CONX!rstORDER.FieldValTrim!CITY_SHIP)
+		V.Passed.000017.Set(V.ODBC.CONX!rstORDER.FieldValTrim!STATE_SHIP)
+		V.Passed.000018.Set(V.ODBC.CONX!rstORDER.FieldValTrim!ZIP_SHIP)
+		'Misc
+		V.Passed.000071.Set(V.ODBC.CONX!rstORDER.FieldValTrim!CONTACT_EMAIL)
+
+
+	F.Intrinsic.Control.EndIf
+	F.ODBC.CONX!rstORDER.Close
+F.Intrinsic.Control.EndIf
+F.ODBC.CONX!rstCust.Close
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$ATG_3675_OH_PHONE$}$RLK$}$4/1/2016
+${$1$}$$}$$}$0$}$11751$}$OES0200A-PHONE-HOOK$}$4/1/2016 4:42:25 PM$}$(Program: ORD200 ; Screen: OES0200A )
+
+Program.Sub.Comments.End
+
